@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace LazyRuntime
 {
-    public class AStarNode : Vector2D
+    public class AStarNode : MapNode
     {
         public AStarNode(int x, int y) : base(x, y) { }
 
@@ -14,10 +14,6 @@ namespace LazyRuntime
 
         public static AStarNode operator +(AStarNode node, Vector2D vector)
         {
-            //AStarNode newNode = new AStarNode(node.m_X + vector.X, node.m_Y + vector.Y);
-            //newNode.PreNode = node.PreNode;
-            //node.m_X += vector.X;
-            //node.m_Y += vector.Y;
             return new AStarNode(node.m_X + vector.X, node.m_Y + vector.Y);
         }
 

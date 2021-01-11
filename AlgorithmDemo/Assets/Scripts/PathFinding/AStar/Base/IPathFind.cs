@@ -13,7 +13,7 @@ namespace LazyRuntime
         /// <param name="start">出发点。</param>
         /// <param name="end">目标点。</param>
         /// <returns>路径的点的集合。</returns>
-        LinkedList<AStarNode> FindPath(AStarNode start, AStarNode end);
+        LinkedList<MapNode> FindPath(MapNode start, MapNode end);
     }
 }
 

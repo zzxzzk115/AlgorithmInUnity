@@ -99,13 +99,13 @@ public class AStarUnityTile : AStarUnity
     {
         AStarNode startNode = new AStarNode(start.y, start.x);
         AStarNode endNode = new AStarNode(end.y, end.x);
-        LinkedList<AStarNode> path = FindPath(startNode, endNode);
+        LinkedList<MapNode> path = FindPath(startNode, endNode);
         if (path != null)
         {
             foreach (var node in path)
             {
                 if(!node.Equals(startNode) && !node.Equals(endNode))
-                    MarkNode(node, 2);
+                    MarkNode(node as AStarNode, 2);
             }
         }
         else

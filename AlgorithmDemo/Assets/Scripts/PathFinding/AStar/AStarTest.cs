@@ -35,7 +35,7 @@ public class AStarTest : MonoBehaviour
         AStarNode start = new AStarNode(2, 1);
         AStarNode end = new AStarNode(2, 5);
         AStarUnity aStarUnity = new AStarUnity(m_Map);
-        LinkedList<AStarNode> path = aStarUnity.FindPath(start, end);
+        LinkedList<MapNode> path = aStarUnity.FindPath(start, end);
         Debug.Log("从" + start + "到" + end);
         aStarUnity.PrintLinkedList(path);
     }

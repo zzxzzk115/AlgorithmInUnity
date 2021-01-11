@@ -5,6 +5,7 @@
     /// </summary>
     public class Vector2D
     {
+        public Vector2D() { }
         public Vector2D(int x, int y)
         {
             m_X = x;

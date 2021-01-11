@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace LazyRuntime
 {
@@ -27,17 +28,21 @@ namespace LazyRuntime
         /// <param name="start">出发点。</param>
         /// <param name="end">目标点。</param>
         /// <returns>路径的点的集合。</returns>
-        public LinkedList<AStarNode> FindPath(AStarNode start, AStarNode end)
+        public LinkedList<MapNode> FindPath(MapNode start, MapNode end)
         {
-            LinkedList<AStarNode> path = new LinkedList<AStarNode>();
+            LinkedList<MapNode> path = new LinkedList<MapNode>();
+            AStarNode startNode = start as AStarNode;
+            AStarNode endNode = end as AStarNode;
+            if(startNode == null || endNode == null)
+                throw new InvalidCastException();
             // 把起点放入OpenList
-            m_OpenList.Add(start);
+            m_OpenList.Add(startNode);
 
             // 主循环，每一轮检查一个当前方格节点
             while (m_OpenList.Count > 0)
             {
                 // 在OpenList中查找F值最小的节点作为当前方格节点
-                AStarNode current = FindMinNode(start, end);
+                AStarNode current = FindMinNode(startNode, endNode);
 
                 // 当前方格节点从OpenList中移除
                 m_OpenList.Remove(current);
@@ -57,7 +62,7 @@ namespace LazyRuntime
                     else
                     {
                         var neighborNode1 = m_OpenList[m_OpenList.IndexOf(neighborNode)];
-                        
+
                         if (current.G < neighborNode1.PreNode.G)
                         {
                             neighborNode1.PreNode = current;
@@ -66,7 +71,7 @@ namespace LazyRuntime
                     }
                 }
                 // 如果终点在OpenList中，直接返回终点格子
-                AStarNode findNode = FindNode(m_OpenList, end);
+                AStarNode findNode = FindNode(m_OpenList, endNode);
                 if (findNode != null)
                 {
                     while (findNode != null)
@@ -172,7 +177,7 @@ namespace LazyRuntime
         {
             List<AStarNode> neighbors = new List<AStarNode>();
             List<Vector2D> vectors = new List<Vector2D>()
-            {new Vector2D(-1, 0), new Vector2D(0, -1), new Vector2D(0, 1), new Vector2D(1, 0)};
+            {new Vector2D(0, -1), new Vector2D(-1, 0), new Vector2D(0, 1), new Vector2D(1, 0)};
             foreach (var v in vectors)
             {
                 AStarNode target = node + v;
