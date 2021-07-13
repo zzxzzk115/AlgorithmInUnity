@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using LazyRuntime;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -28,11 +28,21 @@ public class TileAStar : MonoBehaviour
 
     public Text m_TipText;
 
+    [Range(1, 5)]
+    public float m_speed = 1;
+
+    private AStarCommandExecutor m_commandExecutor;
+
     private int m_SetPointChance = 2;
 
     private AStarNode m_StartNode;
 
     private AStarNode m_EndNode;
+
+    private void Awake()
+    {
+        m_commandExecutor = GetComponent<AStarCommandExecutor>();
+    }
 
     void Start()
     {
@@ -44,6 +54,8 @@ public class TileAStar : MonoBehaviour
     /// </summary>
     public void ResetScene()
     {
+        // 重置AStarUnityTile
+        m_AStarUnityTile?.Reset();
         // 重新随机生成障碍物
         RandomGenerateObstacle();
         // 重新设置设置点的机会为2
@@ -54,7 +66,7 @@ public class TileAStar : MonoBehaviour
         // 提示字也设置为空字符串
         m_TipText.text = "";
         // 重新初始化AStarUnityTile实例，该实例继承自AStarUnity，AStarUnity继承自AStar。核心算法在AStar中。
-        m_AStarUnityTile = new AStarUnityTile(m_Map, m_TileMap, m_Tiles, m_TipText);
+        m_AStarUnityTile = new AStarUnityTile(m_Map, m_TileMap, m_Tiles, m_TipText, m_commandExecutor, m_speed);
     }
 
     /// <summary>
@@ -78,7 +90,7 @@ public class TileAStar : MonoBehaviour
     public void StartAStar()
     {
         // 如果没有设置点的机会，则说明开始点和目标点都已设置完成，可以开始寻路。
-        if (m_SetPointChance <= 0)
+        if (m_SetPointChance <= 0 && !m_AStarUnityTile.IsDoing)
         {
             m_AStarUnityTile.FindPathInTileMap(new Vector2Int(m_StartNode.Y, m_StartNode.X),
                 new Vector2Int(m_EndNode.Y, m_EndNode.X));
@@ -112,7 +124,7 @@ public class TileAStar : MonoBehaviour
                 else if (m_SetPointChance == 1)
                 {
                     m_EndNode = new AStarNode(mapCellPosition.y, mapCellPosition.x);
-                    m_AStarUnityTile.MarkNode(m_EndNode, 3);
+                    m_AStarUnityTile.MarkNode(m_EndNode, 4);
                 }
                 // 设置后要将机会减一
                 m_SetPointChance--;

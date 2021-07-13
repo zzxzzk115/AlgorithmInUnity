@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -20,7 +20,6 @@ namespace LazyRuntime
         {
             m_Map = map;
         }
-
         
         /// <summary>
         /// 寻路算法，得到点的链表。
@@ -28,7 +27,7 @@ namespace LazyRuntime
         /// <param name="start">出发点。</param>
         /// <param name="end">目标点。</param>
         /// <returns>路径的点的集合。</returns>
-        public LinkedList<MapNode> FindPath(MapNode start, MapNode end)
+        public virtual LinkedList<MapNode> FindPath(MapNode start, MapNode end)
         {
             LinkedList<MapNode> path = new LinkedList<MapNode>();
             AStarNode startNode = start as AStarNode;

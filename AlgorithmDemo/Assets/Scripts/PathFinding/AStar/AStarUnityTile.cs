@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using LazyRuntime;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -9,11 +10,14 @@ using UnityEngine.UI;
 /// </summary>
 public class AStarUnityTile : AStarUnity
 {
-    public AStarUnityTile(List<List<int>> map, Tilemap tileMap, Tile[] tiles, Text tipText) : base(map)
+    public AStarUnityTile(List<List<int>> map, Tilemap tileMap, Tile[] tiles,
+        Text tipText, AStarCommandExecutor commandExecutor, float speed) : base(map)
     {
         m_TileMap = tileMap;
         m_Tiles = tiles;
         m_TipText = tipText;
+        m_commandExecutor = commandExecutor;
+        m_speed = speed;
         InitTileMap(map);
         // 锁定相机中心到地图中心
         Vector3 mapCenterPosition = m_TileMap.GetCellCenterWorld(GetMapCenterVector3Int(m_Map));
@@ -25,6 +29,84 @@ public class AStarUnityTile : AStarUnity
     private Tile[] m_Tiles;
 
     private Text m_TipText;
+
+    private AStarCommandExecutor m_commandExecutor;
+
+    private float m_speed;
+
+    private bool m_isDoing;
+    public bool IsDoing { get => m_isDoing; }
+
+    private bool m_isHasPath;
+
+    public override LinkedList<MapNode> FindPath(MapNode start, MapNode end)
+    {
+        LinkedList<MapNode> path = new LinkedList<MapNode>();
+        AStarNode startNode = start as AStarNode;
+        AStarNode endNode = end as AStarNode;
+        if (startNode == null || endNode == null)
+            throw new InvalidCastException();
+        // 把起点放入OpenList
+        m_OpenList.Add(startNode);
+        m_commandExecutor.AddCommand(new AddToOpenCommand<AStarNode>(startNode, this));
+
+        // 主循环，每一轮检查一个当前方格节点
+        while (m_OpenList.Count > 0)
+        {
+            // 在OpenList中查找F值最小的节点作为当前方格节点
+            AStarNode current = FindMinNode(startNode, endNode);
+
+            // 当前方格节点从OpenList中移除
+            m_OpenList.Remove(current);
+
+            // 当前方格节点进入CloseList
+            m_CloseList.Add(current);
+
+            m_commandExecutor.AddCommand(new AddToCloseCommand<AStarNode>(current, this));
+
+            // 找到所有邻近节点
+            List<AStarNode> neighbors = FindNeighbors(current);
+            foreach(var neighborNode in neighbors)
+            {
+                if(!m_CloseList.Contains(neighborNode) && !m_OpenList.Contains(neighborNode))
+                {
+                    m_commandExecutor.AddCommand(new MarkNeighborCommand<AStarNode>(neighborNode, this));
+                }
+            }
+
+            foreach (var neighborNode in neighbors)
+            {
+                if (!m_OpenList.Contains(neighborNode))
+                {
+                    MarkAndInvolve(current, neighborNode);
+                }
+                else
+                {
+                    var neighborNode1 = m_OpenList[m_OpenList.IndexOf(neighborNode)];
+
+                    if (current.G < neighborNode1.PreNode.G)
+                    {
+                        neighborNode1.PreNode = current;
+                        neighborNode1.G = current.G + 1;
+                    }
+                }
+            }
+            // 如果终点在OpenList中，直接返回终点格子
+            AStarNode findNode = FindNode(m_OpenList, endNode);
+            if (findNode != null)
+            {
+                m_isHasPath = true;
+                while (findNode != null)
+                {
+                    m_commandExecutor.AddCommand(new AddToPathCommand<AStarNode>(findNode, this));
+                    path.AddFirst(findNode);
+                    findNode = findNode.PreNode;
+                }
+                return path;
+            }
+        }
+        return null;
+    }
 
     /// <summary>
     /// 得到地图中心的坐标。
@@ -100,17 +182,27 @@ public class AStarUnityTile : AStarUnity
         AStarNode startNode = new AStarNode(start.y, start.x);
         AStarNode endNode = new AStarNode(end.y, end.x);
         LinkedList<MapNode> path = FindPath(startNode, endNode);
-        if (path != null)
-        {
-            foreach (var node in path)
+        m_commandExecutor.Execute(1000 / m_speed, ()=>m_isDoing = true, ()=> {
+            if(!m_isHasPath)
             {
-                if(!node.Equals(startNode) && !node.Equals(endNode))
-                    MarkNode(node as AStarNode, 2);
+                Log("找不到通路！");
             }
-        }
-        else
-            Log("找不到路径！");
-        
+        });  
     }
-    
+
+    protected override void MarkAndInvolve(AStarNode current, AStarNode neighborNode)
+    {
+        if (!m_CloseList.Contains(neighborNode))
+        {
+            neighborNode.PreNode = current;
+            neighborNode.G = current.G + 1;
+            m_OpenList.Add(neighborNode);
+            m_commandExecutor.AddCommand(new AddToOpenCommand<AStarNode>(neighborNode, this));
+        }
+    }
+
+    public void Reset()
+    {
+        m_commandExecutor.Stop();
+    }
 }
