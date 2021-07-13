@@ -1,9 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-
-
 namespace LazyRuntime
 {
+    /// <summary>
+    /// 地图节点
+    /// </summary>
     public class MapNode : Vector2D
     {
         public MapNode() { }

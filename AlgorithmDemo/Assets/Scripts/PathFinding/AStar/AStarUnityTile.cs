@@ -20,23 +20,44 @@ public class AStarUnityTile : AStarUnity
         m_speed = speed;
         InitTileMap(map);
         // 锁定相机中心到地图中心
-        Vector3 mapCenterPosition = m_TileMap.GetCellCenterWorld(GetMapCenterVector3Int(m_Map));
+        Vector3 mapCenterPosition = m_TileMap.GetCellCenterWorld(GetMapCenterVector3Int(m_map));
         Camera.main.transform.position = new Vector3(mapCenterPosition.x, mapCenterPosition.y, Camera.main.transform.position.z);
     }
 
+    /// <summary>
+    /// TileMap
+    /// </summary>
     private Tilemap m_TileMap;
 
+    /// <summary>
+    /// 所有的Tile
+    /// </summary>
     private Tile[] m_Tiles;
 
+    /// <summary>
+    /// 用于显示提示信息的Text组件
+    /// </summary>
     private Text m_TipText;
 
+    /// <summary>
+    /// A*命令执行者
+    /// </summary>
     private AStarCommandExecutor m_commandExecutor;
 
+    /// <summary>
+    /// 演示速度
+    /// </summary>
     private float m_speed;
 
+    /// <summary>
+    /// 是否正在演示
+    /// </summary>
     private bool m_isDoing;
     public bool IsDoing { get => m_isDoing; }
 
+    /// <summary>
+    /// 是否有通路
+    /// </summary>
     private bool m_isHasPath;
 
     public override LinkedList<MapNode> FindPath(MapNode start, MapNode end)
@@ -47,20 +68,20 @@ public class AStarUnityTile : AStarUnity
         if (startNode == null || endNode == null)
             throw new InvalidCastException();
         // 把起点放入OpenList
-        m_OpenList.Add(startNode);
+        m_openList.Add(startNode);
         m_commandExecutor.AddCommand(new AddToOpenCommand<AStarNode>(startNode, this));
 
         // 主循环，每一轮检查一个当前方格节点
-        while (m_OpenList.Count > 0)
+        while (m_openList.Count > 0)
         {
             // 在OpenList中查找F值最小的节点作为当前方格节点
             AStarNode current = FindMinNode(startNode, endNode);
 
             // 当前方格节点从OpenList中移除
-            m_OpenList.Remove(current);
+            m_openList.Remove(current);
 
             // 当前方格节点进入CloseList
-            m_CloseList.Add(current);
+            m_closeList.Add(current);
 
             m_commandExecutor.AddCommand(new AddToCloseCommand<AStarNode>(current, this));
 
@@ -68,7 +89,7 @@ public class AStarUnityTile : AStarUnity
             List<AStarNode> neighbors = FindNeighbors(current);
             foreach(var neighborNode in neighbors)
             {
-                if(!m_CloseList.Contains(neighborNode) && !m_OpenList.Contains(neighborNode))
+                if(!m_closeList.Contains(neighborNode) && !m_openList.Contains(neighborNode))
                 {
                     m_commandExecutor.AddCommand(new MarkNeighborCommand<AStarNode>(neighborNode, this));
                 }
@@ -76,13 +97,13 @@ public class AStarUnityTile : AStarUnity
 
             foreach (var neighborNode in neighbors)
             {
-                if (!m_OpenList.Contains(neighborNode))
+                if (!m_openList.Contains(neighborNode))
                 {
                     MarkAndInvolve(current, neighborNode);
                 }
                 else
                 {
-                    var neighborNode1 = m_OpenList[m_OpenList.IndexOf(neighborNode)];
+                    var neighborNode1 = m_openList[m_openList.IndexOf(neighborNode)];
 
                     if (current.G < neighborNode1.PreNode.G)
                     {
@@ -92,7 +113,7 @@ public class AStarUnityTile : AStarUnity
                 }
             }
             // 如果终点在OpenList中，直接返回终点格子
-            AStarNode findNode = FindNode(m_OpenList, endNode);
+            AStarNode findNode = FindNode(m_openList, endNode);
             if (findNode != null)
             {
                 m_isHasPath = true;
@@ -190,17 +211,25 @@ public class AStarUnityTile : AStarUnity
         });  
     }
 
+    /// <summary>
+    /// 标记相邻节点的前驱、添加相邻节点到OpenList
+    /// </summary>
+    /// <param name="current">当前节点。</param>
+    /// <param name="neighborNode">相邻节点。</param>
     protected override void MarkAndInvolve(AStarNode current, AStarNode neighborNode)
     {
-        if (!m_CloseList.Contains(neighborNode))
+        if (!m_closeList.Contains(neighborNode))
         {
             neighborNode.PreNode = current;
             neighborNode.G = current.G + 1;
-            m_OpenList.Add(neighborNode);
+            m_openList.Add(neighborNode);
             m_commandExecutor.AddCommand(new AddToOpenCommand<AStarNode>(neighborNode, this));
         }
     }
 
+    /// <summary>
+    /// 重置
+    /// </summary>
     public void Reset()
     {
         m_commandExecutor.Stop();

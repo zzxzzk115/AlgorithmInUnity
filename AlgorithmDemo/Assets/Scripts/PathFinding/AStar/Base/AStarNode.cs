@@ -1,15 +1,20 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 namespace LazyRuntime
 {
+    /// <summary>
+    /// A*节点
+    /// </summary>
     public class AStarNode : MapNode
     {
         public AStarNode(int x, int y) : base(x, y) { }
 
+        /// <summary>
+        /// 前驱节点
+        /// </summary>
         public AStarNode PreNode { get; set; }
 
+        /// <summary>
+        /// G值
+        /// </summary>
         public int G { set; get; }
 
         public static AStarNode operator +(AStarNode node, Vector2D vector)
@@ -28,7 +33,7 @@ namespace LazyRuntime
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return m_X ^ m_Y;
         }
     }
 }

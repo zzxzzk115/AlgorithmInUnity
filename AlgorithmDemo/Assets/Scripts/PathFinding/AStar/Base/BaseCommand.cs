@@ -5,6 +5,9 @@ namespace LazyRuntime
     /// </summary>
     public abstract class BaseCommand<T>
     {
+        /// <summary>
+        /// Actor
+        /// </summary>
         protected T m_actor;
 
         public BaseCommand(T actor)

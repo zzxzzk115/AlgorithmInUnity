@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using LazyRuntime;
 using UnityEngine;
 
+/// <summary>
+/// AStar基础逻辑测试
+/// </summary>
 public class AStarTest : MonoBehaviour
 {
     private List<List<int>> m_Map = new List<List<int>>()

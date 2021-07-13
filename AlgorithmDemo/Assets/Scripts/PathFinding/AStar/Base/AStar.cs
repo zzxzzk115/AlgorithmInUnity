@@ -10,15 +10,15 @@ namespace LazyRuntime
     public class AStar : IPathFind
     {
 
-        protected List<AStarNode> m_OpenList = new List<AStarNode>();
+        protected List<AStarNode> m_openList = new List<AStarNode>();
 
-        protected List<AStarNode> m_CloseList = new List<AStarNode>();
+        protected List<AStarNode> m_closeList = new List<AStarNode>();
 
-        protected List<List<int>> m_Map;
+        protected List<List<int>> m_map;
 
         public AStar(List<List<int>> map)
         {
-            m_Map = map;
+            m_map = map;
         }
         
         /// <summary>
@@ -35,32 +35,32 @@ namespace LazyRuntime
             if(startNode == null || endNode == null)
                 throw new InvalidCastException();
             // 把起点放入OpenList
-            m_OpenList.Add(startNode);
+            m_openList.Add(startNode);
 
             // 主循环，每一轮检查一个当前方格节点
-            while (m_OpenList.Count > 0)
+            while (m_openList.Count > 0)
             {
                 // 在OpenList中查找F值最小的节点作为当前方格节点
                 AStarNode current = FindMinNode(startNode, endNode);
 
                 // 当前方格节点从OpenList中移除
-                m_OpenList.Remove(current);
+                m_openList.Remove(current);
 
                 // 当前方格节点进入CloseList
-                m_CloseList.Add(current);
+                m_closeList.Add(current);
 
                 // 找到所有邻近节点
                 List<AStarNode> neighbors = FindNeighbors(current);
 
                 foreach (var neighborNode in neighbors)
                 {
-                    if (!m_OpenList.Contains(neighborNode))
+                    if (!m_openList.Contains(neighborNode))
                     {
                         MarkAndInvolve(current, neighborNode);
                     }
                     else
                     {
-                        var neighborNode1 = m_OpenList[m_OpenList.IndexOf(neighborNode)];
+                        var neighborNode1 = m_openList[m_openList.IndexOf(neighborNode)];
 
                         if (current.G < neighborNode1.PreNode.G)
                         {
@@ -70,7 +70,7 @@ namespace LazyRuntime
                     }
                 }
                 // 如果终点在OpenList中，直接返回终点格子
-                AStarNode findNode = FindNode(m_OpenList, endNode);
+                AStarNode findNode = FindNode(m_openList, endNode);
                 if (findNode != null)
                 {
                     while (findNode != null)
@@ -127,7 +127,7 @@ namespace LazyRuntime
         /// <returns>是否是障碍物。</returns>
         protected virtual bool CheckBarrier(AStarNode node)
         {
-            return m_Map[node.X][node.Y] != 0;
+            return m_map[node.X][node.Y] != 0;
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace LazyRuntime
         /// <returns>是否越界。</returns>
         protected virtual bool CheckBorder(AStarNode node)
         {
-            if (node.X >= m_Map.Count || node.X < 0 || node.Y >= m_Map[0].Count || node.Y < 0)
+            if (node.X >= m_map.Count || node.X < 0 || node.Y >= m_map[0].Count || node.Y < 0)
             {
                 return true;
             }
@@ -202,7 +202,7 @@ namespace LazyRuntime
         {
             AStarNode minNode = default(AStarNode);
             int minF = int.MaxValue;
-            foreach (var node in m_OpenList)
+            foreach (var node in m_openList)
             {
                 int currentF = F(node, end, node.G);
                 if (minF >= currentF)
@@ -234,11 +234,11 @@ namespace LazyRuntime
         /// <param name="neighborNode">相邻节点。</param>
         protected virtual void MarkAndInvolve(AStarNode current, AStarNode neighborNode)
         {
-            if (!m_CloseList.Contains(neighborNode))
+            if (!m_closeList.Contains(neighborNode))
             {
                 neighborNode.PreNode = current;
                 neighborNode.G = current.G + 1;
-                m_OpenList.Add(neighborNode);
+                m_openList.Add(neighborNode);
             }
         }
     }
